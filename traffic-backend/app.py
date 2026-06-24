@@ -541,35 +541,141 @@ def chat():
     try:
         data = request.get_json()
 
+        print("Received:", data)
+
         user_message = data.get("message", "")
 
         response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"""
-            You are TrafficSense AI.
-
-            Help users with:
-            - traffic rules
-            - route planning
-            - emergency services
-            - road safety
-            - fuel saving tips
-            - congestion alerts
-
-            User question:
-            {user_message}
-            """
+            contents=user_message
         )
+
+        print("Gemini Response:", response.text)
 
         return jsonify({
             "reply": response.text
         })
 
     except Exception as e:
+        print("CHAT ERROR:", str(e))
+
         return jsonify({
             "error": str(e)
         }), 500
+        
+@app.route("/fuel-predict", methods=["POST"])
+def fuel_predict():
 
+    data = request.json
+
+    vehicle = data.get("vehicle")
+    distance = float(data.get("distance"))
+    traffic = data.get("traffic")
+    fuel = data.get("fuel")
+
+    base_eff = {
+        "Bike": 45,
+        "Sedan": 16,
+        "SUV": 12,
+        "Truck": 6,
+        "EV": 8
+    }
+
+    traffic_factor = {
+        "Smooth": 1.0,
+        "Moderate": 0.8,
+        "Heavy": 0.55
+    }
+
+    efficiency = base_eff[vehicle] * traffic_factor[traffic]
+
+    litres = round(distance / efficiency, 2)
+
+    fuel_price = {
+        "Petrol": 105,
+        "Diesel": 92,
+        "CNG": 75,
+        "EV": 9
+    }
+
+    cost = round(litres * fuel_price[fuel])
+
+    co2 = round(litres * 2.3, 2)
+
+    eco = max(0, min(100, round(100 - litres * 30)))
+
+    return jsonify({
+        "fuelUsage": litres,
+        "cost": cost,
+        "co2": co2,
+        "eco": eco
+    })
+    
+
+@app.route("/accident-data", methods=["POST"])
+def accident_data():
+
+    city = request.json.get("city")
+
+    if city.lower() == "pune":
+
+        return jsonify({
+            "zones":[
+                {
+                    "name":"Katraj Ghat",
+                    "risk":91,
+                    "reason":"Sharp curves"
+                },
+                {
+                    "name":"Chandani Chowk",
+                    "risk":84,
+                    "reason":"Heavy congestion"
+                },
+                {
+                    "name":"Wakad",
+                    "risk":73,
+                    "reason":"Frequent accidents"
+                }
+            ],
+
+            "hospital":"8 within 5 km",
+
+            "police":"6 within 5 km",
+
+            "weather":"Heavy rain expected",
+
+            "overspeed":"Speed limit 60 km/h"
+        })
+
+    elif city.lower()=="mumbai":
+
+        return jsonify({
+
+            "zones":[
+                {
+                    "name":"Bandra Sea Link",
+                    "risk":80,
+                    "reason":"High speed"
+                },
+                {
+                    "name":"Andheri Subway",
+                    "risk":72,
+                    "reason":"Waterlogging"
+                }
+            ],
+
+            "hospital":"10 within 5 km",
+
+            "police":"7 within 5 km",
+
+            "weather":"High wind warning",
+
+            "overspeed":"Speed limit 80 km/h"
+        })
+
+    return jsonify({
+        "zones":[]
+    })
 # ---------------- RUN SERVER ----------------
 
 if __name__ == "__main__":

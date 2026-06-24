@@ -75,6 +75,14 @@ function MapPage() {
 
       if (data.routes?.length > 0) {
         const bestRoute = data.routes[0];
+        localStorage.setItem("sourceCity", from);
+localStorage.setItem("destinationCity", to);
+
+setRoutes(data.routes);
+        localStorage.setItem(
+          "tripDistance",
+          bestRoute.distance.toString()
+        );
 
         setRouteInfo({
           eta: `${bestRoute.duration} min`,

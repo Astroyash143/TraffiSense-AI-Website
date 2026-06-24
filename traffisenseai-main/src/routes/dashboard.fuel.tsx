@@ -10,7 +10,11 @@ export const Route = createFileRoute("/dashboard/fuel")({
 
 function FuelPage() {
   const [vehicle, setVehicle] = useState("Sedan");
-  const [distance, setDistance] = useState(20);
+  const savedDistance =
+  Number(localStorage.getItem("tripDistance")) || 20;
+
+  const [distance, setDistance] =
+  useState(savedDistance);
   const [traffic, setTraffic] = useState("Moderate");
   const [fuel, setFuel] = useState("Petrol");
 
@@ -31,7 +35,23 @@ function FuelPage() {
             <Select value={vehicle} onChange={setVehicle} options={["Bike","Sedan","SUV","Truck","EV"]} />
           </Field>
           <Field label="Distance (km)">
-            <input type="range" min={1} max={200} value={distance} onChange={(e) => setDistance(+e.target.value)} className="w-full accent-secondary"/>
+            <div className="flex gap-3 items-center">
+          <input
+            type="range"
+            min={1}
+            max={500}
+            value={distance}
+            onChange={(e) => setDistance(+e.target.value)}
+            className="flex-1 accent-secondary"
+         />
+
+         <input
+            type="number"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value))}
+            className="w-32 px-3 py-2 rounded-lg bg-input/60 border border-border"
+          />
+      </div>
             <div className="text-right text-sm font-display gradient-text">{distance} km</div>
           </Field>
           <Field label="Traffic Condition">
